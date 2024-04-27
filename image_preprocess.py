@@ -10,6 +10,8 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.utils import img_to_array
 
 
+
+
 # 將圖片根據眼距比例縮放
 def resize_image(image_path, scale_factor):
     # 打開圖片
@@ -73,7 +75,7 @@ def preprocess_image(image_path, i):
 
     # 縮放圖片
     resized_image = resize_image(image_path, scale_factor)
-    Preprocessed_path = path + 'Preprocessed/'+ i
+    Preprocessed_path = path + 'Preprocessed' + folder_name + i
     resized_image.save(Preprocessed_path)
 
     # 再一次使用face_recognition套件找出臉部位置
@@ -109,7 +111,7 @@ def preprocess_image(image_path, i):
 
 
 def img_scoring(path, i, model):
-    img = load_img(path+ 'Preprocessed/' + i)
+    img = load_img(path+ 'Preprocessed'+folder_name + i)
     plt.imshow(img)
 
     img_width, img_height, channels = 350, 350, 3
@@ -126,21 +128,26 @@ def img_scoring(path, i, model):
     predict = model.predict(img_array)
     print('predict, ', predict[0][0])
     score = round(predict[0][0], 2)
-    img.save(path + 'Scored/' + str(score) +'_' + i)
+    img.save(path + 'Scored'+ folder_name + str(score) +'_' + i)
 
 
 
 path = './IMG/Original/'
 imgs = [f for f in os.listdir(path+'IMG/')]
+folder_name = 'AllData_std14/'
 
-if not os.path.exists(path + 'Preprocessed/'):
-    os.makedirs(path + 'Preprocessed/')
-if not os.path.exists(path + 'Scored/'):
-    os.makedirs(path + 'Scored/')
+if not os.path.exists(path + 'Preprocessed'+ folder_name):
+    os.makedirs(path + 'Preprocessed'+folder_name)
+if not os.path.exists(path + 'Scored'+ folder_name):
+    os.makedirs(path + 'Scored'+folder_name)
 
 
 # load model
-MyModel = tf.keras.models.load_model('./model/AllData/25-0.12.h5')
+# MyModel = tf.keras.models.load_model('./model/AllData/25-0.12.h5') #AllData
+# MyModel = tf.keras.models.load_model('./model/OnlyAsian/18-0.11.h5') #OnlyAsian
+# MyModel = tf.keras.models.load_model('./model/AllData_std/26-0.12.h5') #AllData_std 26
+# MyModel = tf.keras.models.load_model('./model/AllData_std/24-0.16.h5') #AllData_std 24
+MyModel = tf.keras.models.load_model('./model/AllData_std/14-0.16.h5') #AllData_std 14
 for i in imgs:
     print(i)
     try:

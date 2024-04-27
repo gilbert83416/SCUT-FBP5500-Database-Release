@@ -16,12 +16,22 @@ from keras.layers import Dense
 
 
 
+def stand(df_colx):
+    x = list(df_colx)
+    x.remove(max(x))
+    x.remove(min(x))
+    mean = sum(x)/len(x)
+    return mean
+
+
+
+
 # os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 
-ratings = pd.read_excel('./SCUT-FBP5500_v2/All_Ratings.xlsx')
+ratings = pd.read_excel('./SCUT-FBP5500_v2/All_RatingsOnlyAsian.xlsx')
 
 filenames = ratings.groupby('Filename').size().index.tolist()
 
@@ -29,7 +39,8 @@ labels = []
 
 for filename in filenames:
     df = ratings[ratings['Filename'] == filename]
-    score = round(df['Rating'].mean(), 2)
+    # score = round(df['Rating'].mean(), 2)
+    score = round(stand(df['Rating']), 2) #去除最高最低再平均
     labels.append({'Filename': filename, 'score': score})
 
 labels_df = pd.DataFrame(labels)
@@ -38,7 +49,7 @@ labels_df = pd.DataFrame(labels)
 
 
 img_width, img_height, channels = 350, 350, 3
-sample_dir = './SCUT-FBP5500_v2/Images/'
+sample_dir = './SCUT-FBP5500_v2/Images_onlyAsian/'
 nb_samples = len(os.listdir(sample_dir))
 input_shape = (img_width, img_height, channels)
 
@@ -72,7 +83,7 @@ model.layers[0].trainable = False
 
 
 
-filepath="./model/{epoch:02d}-{val_loss:.2f}.h5"
+filepath="./model/Only_Asian_std/{epoch:02d}-{val_loss:.2f}.h5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 reduce_learning_rate = ReduceLROnPlateau(monitor='loss',
                                          factor=0.1,
@@ -84,6 +95,7 @@ callback_list = [checkpoint, reduce_learning_rate]
 
 model.layers[0].trainable = True
 model.compile(loss='mse', optimizer='adam')
+
 
 history = model.fit(x=x_train, 
                     y=y_train, 
